@@ -54,3 +54,11 @@ body {
   src: url("/fonts/Freesentation-9Black.ttf") format("truetype");
   font-weight: 900;
 }
+
+@font-face {
+  font-family: "TTTogether";
+  src: url("https://fastly.jsdelivr.net/gh/projectnoonnu/noonfonts_2001@1.1/TTTogetherA.woff")
+    format("woff");
+  font-weight: normal;
+  font-style: normal;
+}

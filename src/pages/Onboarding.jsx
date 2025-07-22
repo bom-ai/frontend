@@ -18,9 +18,10 @@ export default function Onboarding() {
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-[#f7f7fb] font-sans text-gray-900">
-      <img src={logo} alt="logo" className="w-48 mb-12" />
-
-      <div className="w-full max-w-sm space-y-4 px-4">
+      <h1 className="text-[48px] mb-[24px] font-together">
+        <span className="text-[#640D5F]">bo:m</span>atic
+      </h1>
+      <div className="w-full bg-white max-w-sm space-y-4 p-8 rounded-[20px] shadow mb-16">
         <div>
           <label className="block text-[16px] font-semibold mb-1">
             접근 코드
@@ -41,6 +42,14 @@ export default function Onboarding() {
           👉 입장하기
         </button>
       </div>
+
+      {/* 하단 로고 & 문구 */}
+      <footer className="absolute flex flex-col bottom-8 flex items-center space-x-2 text-sm text-gray-600">
+        <img src={logo} alt="bom logo" className="w-20 mb-2" />
+        <span className="font-light">
+          Exclusively designed for Research House bo:m
+        </span>
+      </footer>
     </div>
   );
 }

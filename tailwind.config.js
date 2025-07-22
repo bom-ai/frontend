@@ -4,6 +4,7 @@ export default {
   theme: {
     fontFamily: {
       sans: ["Freesentation", "sans-serif"],
+      together: ["TTTogether", "sans-serif"],
     },
     extend: {},
   },
