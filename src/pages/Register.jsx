@@ -1,46 +1,36 @@
+/* eslint-disable no-unused-vars */
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import logo from "../assets/logo.png";
+import { register } from "../api/auth";
 
-import { login } from "../api/auth";
-import { setTokens } from "../utils/tokenStorage";
-
-export default function Onboarding() {
+export default function Register() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const navigate = useNavigate();
 
   const handleSubmit = async () => {
-    // 입력 유효성 검사
-    if (!email.trim() || !password.trim()) {
-      alert("이메일과 비밀번호를 모두 입력해주세요.");
+    if (!email.trim() || !password.trim() || !confirmPassword.trim()) {
+      alert("모든 항목을 입력해주세요.");
+      return;
+    }
+
+    if (password !== confirmPassword) {
+      alert("비밀번호가 일치하지 않습니다.");
       return;
     }
 
     try {
-      const res = await login(email, password);
-      setTokens(res); // 토큰 저장
-      navigate("/upload-frame"); // 로그인 성공 시 이동
+      const res = await register(email, password);
+      navigate("/check-email", { state: { email: email } }); // ✅ 이메일 전달
     } catch (err) {
-      if (err.response) {
-        // 서버에서 에러 응답이 왔을 때
-        const detail =
-          err.response.data?.detail ||
-          err.response.data?.message ||
-          "알 수 없는 서버 응답";
-        alert("로그인 실패: " + detail);
-      } else if (err.request) {
-        // 요청은 보냈지만 응답이 없을 때
-        alert("서버로부터 응답이 없습니다. 네트워크를 확인해주세요.");
-      } else {
-        // 요청도 못 보낸 에러 (axios 설정 문제 등)
-        alert("요청 실패: " + err.message);
-      }
+      console.error("회원가입 실패:", err);
+      const msg =
+        err.response?.data?.detail ||
+        err.response?.data?.message ||
+        err.message;
+      alert("회원가입 실패: " + msg);
     }
-  };
-
-  const handleRegister = () => {
-    navigate("/register");
   };
 
   return (
@@ -76,30 +66,38 @@ export default function Onboarding() {
           />
         </div>
 
+        <div>
+          <label className="block text-[16px] font-semibold mb-1">
+            비밀번호 확인
+          </label>
+          <input
+            type="password"
+            placeholder="비밀번호 한 번 더 입력"
+            className="w-full py-2 border-b border-gray-400 bg-transparent focus:outline-none placeholder-gray-400"
+            value={confirmPassword}
+            onChange={(e) => setConfirmPassword(e.target.value)}
+          />
+        </div>
+
+        {confirmPassword && (
+          <div
+            className={`text-sm font-medium mt-1 ${
+              confirmPassword === password ? "text-green-600" : "text-red-500"
+            }`}
+          >
+            {confirmPassword === password
+              ? "✅ 비밀번호가 일치합니다!"
+              : "❗ 비밀번호가 일치하지 않습니다!"}
+          </div>
+        )}
+
         <button
           className="w-full bg-gray-800 text-white text-[16px] font-semibold py-2 rounded-[8px] hover:bg-gray-700 transition"
           onClick={handleSubmit}
         >
-          로그인
+          회원가입
         </button>
-
-        <div className="text-center mt-2">
-          <span
-            className="text-[16px] font-semibold text-[#393E46] underline cursor-pointer hover:text-gray-500"
-            onClick={handleRegister}
-          >
-            회원가입
-          </span>
-        </div>
       </div>
-
-      {/* 하단 로고 & 문구 */}
-      <footer className="absolute flex flex-col bottom-8 items-center text-sm text-gray-600">
-        <img src={logo} alt="bom logo" className="w-20 mb-2" />
-        <span className="font-light">
-          Exclusively designed for Research House bo:m
-        </span>
-      </footer>
     </div>
   );
 }
