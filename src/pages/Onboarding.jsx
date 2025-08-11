@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import logo from "../assets/logo.png";
+import background from "../assets/background.jpg";
 
 import { login } from "../api/auth";
 import { setTokens } from "../utils/tokenStorage";
@@ -44,9 +45,16 @@ export default function Onboarding() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-[#f7f7fb] font-sans text-gray-900">
-      <h1 className="text-[48px] mb-[24px] font-together">
-        <span className="text-[#640D5F]">bo:m</span>atic
+    <div
+      className="min-h-screen w-full flex flex-col items-center justify-center 
+             bg-cover bg-center bg-no-repeat font-sans text-gray-900"
+      style={{ backgroundImage: `url(${background})` }}
+    >
+      <h1
+        className="text-[72px] mb-[12px] font-tenorite text-white"
+        style={{ textShadow: "1px 1px 2px rgba(0,0,0,0.3)" }}
+      >
+        bo:matic
       </h1>
 
       <div className="w-full bg-white max-w-sm space-y-4 p-8 rounded-[20px] shadow mb-16">
@@ -94,9 +102,10 @@ export default function Onboarding() {
       </div>
 
       {/* 하단 로고 & 문구 */}
-      <footer className="absolute flex flex-col bottom-8 items-center text-sm text-gray-600">
-        <img src={logo} alt="bom logo" className="w-20 mb-2" />
-        <span className="font-light">
+      <footer className="absolute bottom-8 flex items-center justify-center text-sm text-gray-500">
+        <img src={logo} alt="bom logo" className="w-20 mr-2" />
+        <span className="mx-2 text-gray-400">|</span>
+        <span className="font-medium">
           Exclusively designed for Research House bo:m
         </span>
       </footer>

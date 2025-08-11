@@ -1,5 +1,4 @@
 import { MdOutlineUploadFile } from "react-icons/md";
-import { FaCheckCircle } from "react-icons/fa";
 import { IoCloseSharp } from "react-icons/io5";
 
 import Header from "../components/Header";
@@ -28,7 +27,6 @@ export default function UploadFrame() {
   const fileInputRef = useRef(null);
   const dispatch = useDispatch();
 
-  // 👇 그룹명 추출 함수
   const extractGroupNamesFromHtml = (html) => {
     const parser = new DOMParser();
     const doc = parser.parseFromString(html, "text/html");
@@ -67,7 +65,7 @@ export default function UploadFrame() {
     // ✅ base64로 변환 후 Redux에 프레임 저장
     const reader = new FileReader();
     reader.onload = () => {
-      const base64 = reader.result.split(",")[1];
+      const base64 = reader.result;
       dispatch(
         setUploadedFrame({
           frameName: file.name,
@@ -116,7 +114,7 @@ export default function UploadFrame() {
       return;
     }
 
-    navigate("/upload-audio");
+    navigate("/select-tone");
   };
 
   return (
@@ -128,9 +126,10 @@ export default function UploadFrame() {
           {/* Step Indicator */}
           <div className="w-full mb-10">
             <div className="flex items-center space-x-3">
-              <div className="h-2 w-1/3 bg-[#69247C] rounded-full" />
-              <div className="h-2 w-1/3 bg-gray-300 rounded-full" />
-              <div className="h-2 w-1/3 bg-gray-300 rounded-full" />
+              <div className="h-2 w-1/4 bg-[#474E93] rounded-full" />
+              <div className="h-2 w-1/4 bg-gray-300 rounded-full" />
+              <div className="h-2 w-1/4 bg-gray-300 rounded-full" />
+              <div className="h-2 w-1/4 bg-gray-300 rounded-full" />
             </div>
           </div>
 
@@ -140,7 +139,7 @@ export default function UploadFrame() {
               📑 내용 분석 프레임 업로드
             </h2>
             <p className="text-gray-500 text-[16px] font-regular">
-              내용 분석 프레임 업로드 관련 부연설명
+              * 내용 분석 프레임은 docx 파일 형식이어야 합니다
             </p>
           </div>
 
@@ -154,7 +153,7 @@ export default function UploadFrame() {
               <div className="flex flex-col items-center">
                 <MdOutlineUploadFile className="text-gray-500 text-[16px]" />
                 <p className="text-[16px] text-gray-500 mt-1">
-                  내용 분석 프레임을 업로드해주세요
+                  내용 분석 프레임을 업로드해주세요.
                 </p>
               </div>
             </label>
@@ -171,13 +170,7 @@ export default function UploadFrame() {
 
               {/* 내용 */}
               <div className="w-full h-full flex items-center space-x-3">
-                <div className="flex-[1] flex flex-col items-center justify-center">
-                  <FaCheckCircle className="text-green-500 text-[20px]" />
-                  <p className="text-sm text-green-600 text-[16px] font-medium mt-[4px]">
-                    완료
-                  </p>
-                </div>
-                <div className="flex-[11]">
+                <div>
                   <p className="font-extrabold text-[16px] text-gray-800">
                     {fileName}
                   </p>

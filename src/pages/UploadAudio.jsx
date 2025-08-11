@@ -1,32 +1,35 @@
+/* eslint-disable no-unused-vars */
 import { MdOutlineUploadFile } from "react-icons/md";
 import { FaCheckCircle } from "react-icons/fa";
 import { IoCloseSharp } from "react-icons/io5";
+import soundIcon from "../assets/sound-icon.png";
 
 import Header from "../components/Header";
-import { useState, useEffect } from "react";
+import { useState } from "react";
+import { useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { useRef } from "react";
 import { useSelector } from "react-redux";
+
 import Modal from "../components/Modal";
+import { base64ToFile } from "../utils/fileUtils";
+import axiosSecure from "../api/axiosSecure";
+
+import { setJobId } from "../redux/jobSlice";
 
 export default function UploadAudio() {
   const [fileNames, setFileNames] = useState([]);
   const [fileSizes, setFileSizes] = useState([]);
   const fileInputRefs = useRef([]);
   const [showModal, setShowModal] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   const navigate = useNavigate();
+  const dispatch = useDispatch();
 
   const groupNames = useSelector((state) => state.groupNames.values);
-
-  useEffect(() => {
-    setFileNames(new Array(groupNames.length).fill(null));
-    setFileSizes(new Array(groupNames.length).fill(null));
-
-    fileInputRefs.current = groupNames.map(
-      (_, i) => fileInputRefs.current[i] || document.createElement("input")
-    );
-  }, [groupNames]);
+  const uploadedFrame = useSelector((state) => state.uploadedFrame);
+  const analysisStyle = useSelector((state) => state.analysisStyle.style);
 
   const handleFileChange = (e, index) => {
     const file = e.target.files[0];
@@ -46,8 +49,8 @@ export default function UploadAudio() {
     setFileNames(newFileNames);
     setFileSizes(newFileSizes);
 
-    if (fileInputRefs.current[index]?.current) {
-      fileInputRefs.current[index].current.value = null;
+    if (fileInputRefs.current[index]) {
+      fileInputRefs.current[index].value = null;
     }
   };
 
@@ -65,25 +68,85 @@ export default function UploadAudio() {
       setShowModal(true);
       return;
     }
-    navigate("/upload-frame");
+    navigate("/select-tone");
   };
 
   const handleModalConfirm = () => {
     setShowModal(false);
     setFileNames(new Array(groupNames.length).fill(null));
     setFileSizes(new Array(groupNames.length).fill(null));
-    // dispatch(clearAllAudioFiles()); // 선택적으로
     navigate("/upload-frame");
   };
 
   const handleModalClose = () => setShowModal(false);
 
-  const handleNext = () => {
-    // if (!fileName) {
-    //   alert("파일을 먼저 업로드해주세요!");
-    //   return;
-    // }
-    navigate("/result"); // ✅ 페이지 이동
+  const handleNext = async () => {
+    setIsLoading(true);
+
+    try {
+      const formData = new FormData();
+
+      if (
+        uploadedFrame.frameBase64 &&
+        uploadedFrame.frameName &&
+        uploadedFrame.frameType
+      ) {
+        const frameFile = base64ToFile(
+          uploadedFrame.frameBase64,
+          uploadedFrame.frameName,
+          uploadedFrame.frameType
+        );
+        formData.append("frame", frameFile);
+      }
+
+      const filenameMappingObj = {};
+
+      // fileInputRefs.current를 순회하면서 원래 파일 이름과 groupName을 매핑
+      fileInputRefs.current.forEach((inputEl, index) => {
+        if (inputEl?.files?.[0]) {
+          const originalFile = inputEl.files[0];
+          const originalFileName = originalFile.name;
+
+          filenameMappingObj[originalFileName] = groupNames[index];
+
+          formData.append("audios", originalFile);
+        }
+      });
+
+      // 매핑 정보도 함께 전송
+      formData.append("mapping", JSON.stringify(filenameMappingObj));
+
+      console.log("✅ FormData to be sent:");
+      for (let [key, value] of formData.entries()) {
+        console.log(`${key}:`, value);
+      }
+
+      let apiUrl = "/bomatic_pipeline/analyze";
+      if (analysisStyle) {
+        apiUrl += `?template_type=${analysisStyle}`;
+      }
+
+      const response = await axiosSecure.post(apiUrl, formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
+
+      const jobId = response.data.job_id;
+
+      // 2. Redux에 job_id 저장
+      if (jobId) {
+        dispatch(setJobId(jobId));
+        console.log(jobId);
+      }
+
+      navigate("/result");
+    } catch (err) {
+      console.error("분석 실패:", err);
+      alert("서버에 요청 중 오류가 발생했습니다.");
+    } finally {
+      setIsLoading(false); // ✅ 성공/실패 여부와 상관없이 항상 로딩 상태 비활성화
+    }
   };
 
   return (
@@ -95,9 +158,10 @@ export default function UploadAudio() {
           {/* Step Indicator */}
           <div className="w-full mb-10">
             <div className="flex items-center space-x-3">
-              <div className="h-2 w-1/3 bg-[#69247C] rounded-full" />
-              <div className="h-2 w-1/3 bg-[#69247C] rounded-full" />
-              <div className="h-2 w-1/3 bg-gray-300 rounded-full" />
+              <div className="h-2 w-1/4 bg-[#474E93] rounded-full" />
+              <div className="h-2 w-1/4 bg-[#474E93] rounded-full" />
+              <div className="h-2 w-1/4 bg-[#474E93] rounded-full" />
+              <div className="h-2 w-1/4 bg-gray-300 rounded-full" />
             </div>
           </div>
 
@@ -107,7 +171,7 @@ export default function UploadAudio() {
               🎙️ 오디오 파일 업로드
             </h2>
             <p className="text-gray-500 text-[16px] font-regular">
-              오디오 파일 업로드 관련 부연설명
+              * 각 그룹명에 해당되는 오디오 파일을 업로드해주세요.
             </p>
           </div>
 
@@ -116,7 +180,7 @@ export default function UploadAudio() {
             {groupNames.map((groupName, index) => (
               <div key={index} className="w-full h-20">
                 <div className="flex items-center mb-1">
-                  <p className="text-sm text-white font-regular px-2 py-1 bg-gray-800 rounded-[10px] w-fit">
+                  <p className="text-sm text-gray-500 font-medium px-2 py-1 bg-gray-200 rounded-[10px] w-fit">
                     그룹명
                   </p>
                   <p className="ml-2 font-semibold text-gray-500">
@@ -135,13 +199,14 @@ export default function UploadAudio() {
 
                     {/* 내용 */}
                     <div className="w-full h-full flex items-center space-x-3">
-                      <div className="flex-[1] flex flex-col items-center justify-center">
-                        <FaCheckCircle className="text-green-500 text-[20px]" />
-                        <p className="text-sm text-green-600 text-[16px] font-medium mt-[4px]">
-                          완료
-                        </p>
+                      <div className="flex-[1] flex flex-col items-center justify-center mr-[8px]">
+                        <img
+                          src={soundIcon}
+                          alt="Sound Icon"
+                          className="w-10 h-10"
+                        />
                       </div>
-                      <div className="flex-[11]">
+                      <div className="flex-[7]">
                         <p className="font-extrabold text-[16px] text-gray-800">
                           {fileNames[index]}
                         </p>
@@ -172,7 +237,7 @@ export default function UploadAudio() {
                   type="file"
                   className="hidden"
                   onChange={(e) => handleFileChange(e, index)}
-                  ref={fileInputRefs.current[index]}
+                  ref={(el) => (fileInputRefs.current[index] = el)}
                 />
               </div>
             ))}
@@ -199,6 +264,7 @@ export default function UploadAudio() {
           </div>
         </div>
       </main>
+
       {showModal && (
         <Modal
           title="정말 이전으로 돌아가시겠습니까?"
@@ -206,6 +272,14 @@ export default function UploadAudio() {
           onConfirm={handleModalConfirm}
           onClose={handleModalClose}
         />
+      )}
+
+      {isLoading && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-60">
+          <div className="flex flex-col items-center">
+            <div className="w-10 h-10 border-4 border-white border-t-transparent rounded-full animate-spin"></div>
+          </div>
+        </div>
       )}
     </div>
   );

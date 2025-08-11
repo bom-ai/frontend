@@ -2,11 +2,13 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { register } from "../api/auth";
+import background from "../assets/background.jpg";
 
 export default function Register() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
   const handleSubmit = async () => {
@@ -21,8 +23,9 @@ export default function Register() {
     }
 
     try {
+      setLoading(true); // ✅ 시작
       const res = await register(email, password);
-      navigate("/check-email", { state: { email: email } }); // ✅ 이메일 전달
+      navigate("/check-email", { state: { email } });
     } catch (err) {
       console.error("회원가입 실패:", err);
       const msg =
@@ -30,13 +33,33 @@ export default function Register() {
         err.response?.data?.message ||
         err.message;
       alert("회원가입 실패: " + msg);
+    } finally {
+      setLoading(false); // ✅ 끝
     }
   };
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-[#f7f7fb] font-sans text-gray-900">
-      <h1 className="text-[48px] mb-[24px] font-together">
-        <span className="text-[#640D5F]">bo:m</span>atic
+    <div
+      className="min-h-screen w-full flex flex-col items-center justify-center 
+                 bg-cover bg-center bg-no-repeat font-sans text-gray-900"
+      style={{ backgroundImage: `url(${background})` }}
+    >
+      {loading && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-60">
+          <div className="flex flex-col items-center">
+            <div className="w-10 h-10 border-4 border-white border-t-transparent rounded-full animate-spin"></div>
+            <span className="mt-4 text-white text-lg font-medium">
+              회원가입 중
+            </span>
+          </div>
+        </div>
+      )}
+
+      <h1
+        className="text-[72px] mb-[12px] font-tenorite text-white"
+        style={{ textShadow: "1px 1px 2px rgba(0,0,0,0.3)" }}
+      >
+        bo:matic
       </h1>
 
       <div className="w-full bg-white max-w-sm space-y-4 p-8 rounded-[20px] shadow mb-16">

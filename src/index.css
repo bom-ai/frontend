@@ -62,3 +62,15 @@ body {
   font-weight: normal;
   font-style: normal;
 }
+
+@font-face {
+  font-family: "SDKukdetopokki";
+  src: url("https://fastly.jsdelivr.net/gh/projectnoonnu/noonfonts_two@1.0/SDKukdetopokki.woff")
+    format("woff");
+  font-weight: 700;
+}
+
+@font-face {
+  font-family: "Tenorite";
+  src: url("/fonts/Tenorite.ttf") format("truetype");
+}
