@@ -2,7 +2,7 @@ import { MdOutlineUploadFile } from "react-icons/md";
 import { IoCloseSharp } from "react-icons/io5";
 
 import Header from "../components/Header";
-import { setGroupNames, clearGroupNames } from "../redux/GroupNamesSlice";
+import { setGroupNames, clearGroupNames } from "../redux/groupNamesSlice";
 import {
   setUploadedFrame,
   clearUploadedFrame,
