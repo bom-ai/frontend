@@ -13,7 +13,7 @@ import axiosSecure from "../api/axiosSecure";
 import { base64ToFile } from "../utils/fileUtils";
 
 // Redux 액션 import
-import { clearGroupNames } from "../redux/GroupNamesSlice";
+import { clearGroupNames } from "../redux/groupNamesSlice";
 import { clearUploadedFrame } from "../redux/uploadedFrameSlice";
 import { setAnalysisStyle } from "../redux/analysisStyleSlice";
 import { clearJobId } from "../redux/jobSlice";
