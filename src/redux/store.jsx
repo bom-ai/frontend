@@ -1,6 +1,6 @@
 // src/store/store.js
 import { configureStore } from "@reduxjs/toolkit";
-import groupNamesReducer from "./groupNamesSlice";
+import groupNamesReducer from "./GroupNamesSlice";
 import analysisStyleReducer from "./analysisStyleSlice";
 import uploadedFrameReducer from "./uploadedFrameSlice";
 import jobReducer from "./jobSlice";
