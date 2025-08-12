@@ -10,7 +10,7 @@ import { logout } from "./auth";
 import axiosBase from "./axiosBase";
 
 const axiosSecure = axios.create({
-  baseURL: "http://34.60.203.231:8000/api",
+  baseURL: "https://bomatic-test-m5gnp76nfq-du.a.run.app/api",
   headers: { "Content-Type": "application/json" },
 });
 

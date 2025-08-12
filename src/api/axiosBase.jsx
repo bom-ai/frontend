@@ -2,7 +2,7 @@
 import axios from "axios";
 
 const axiosBase = axios.create({
-  baseURL: "http://34.60.203.231:8000/api",
+  baseURL: "https://bomatic-test-m5gnp76nfq-du.a.run.app/api",
   headers: { "Content-Type": "application/json" },
 });
 
