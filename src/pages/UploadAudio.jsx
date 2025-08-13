@@ -84,7 +84,7 @@ export default function UploadAudio() {
     setIsLoading(true);
 
     try {
-      const formData = new FormData();
+      const requestFormData = new FormData();
 
       if (
         uploadedFrame.frameBase64 &&
@@ -96,56 +96,70 @@ export default function UploadAudio() {
           uploadedFrame.frameName,
           uploadedFrame.frameType
         );
-        formData.append("frame", frameFile);
+        requestFormData.append("frame", frameFile);
       }
 
-      const filenameMappingObj = {};
+      requestFormData.append("template_type", analysisStyle || "refined");
 
-      // fileInputRefs.current를 순회하면서 원래 파일 이름과 groupName을 매핑
+      const mappingObj = {};
+      const filesToUpload = [];
+
       fileInputRefs.current.forEach((inputEl, index) => {
         if (inputEl?.files?.[0]) {
-          const originalFile = inputEl.files[0];
-          const originalFileName = originalFile.name;
+          const audioFile = inputEl.files[0];
+          const audioFileName = audioFile.name;
 
-          filenameMappingObj[originalFileName] = groupNames[index];
-
-          formData.append("audios", originalFile);
+          requestFormData.append("filenames", audioFileName);
+          mappingObj[audioFileName] = groupNames[index];
+          filesToUpload.push({ name: audioFileName, file: audioFile });
         }
       });
 
-      // 매핑 정보도 함께 전송
-      formData.append("mapping", JSON.stringify(filenameMappingObj));
+      requestFormData.append("mapping", JSON.stringify(mappingObj));
 
-      console.log("✅ FormData to be sent:");
-      for (let [key, value] of formData.entries()) {
-        console.log(`${key}:`, value);
-      }
+      // 백엔드에 분석 요청
+      const response = await axiosSecure.post(
+        "/bomatic_pipeline/request-analysis",
+        requestFormData,
+        {
+          headers: { "Content-Type": "multipart/form-data" },
+        }
+      );
 
-      let apiUrl = "/bomatic_pipeline/analyze";
-      if (analysisStyle) {
-        apiUrl += `?template_type=${analysisStyle}`;
-      }
-
-      const response = await axiosSecure.post(apiUrl, formData, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
+      const { job_id, upload_urls } = response.data;
+      console.log("✅ STEP 1 완료: Job ID와 업로드 URL 수신", {
+        job_id,
+        upload_urls,
       });
 
-      const jobId = response.data.job_id;
+      const uploadPromises = filesToUpload.map(({ name, file }) => {
+        const signedUrl = upload_urls[name];
+        if (!signedUrl) {
+          console.error(`'${name}'에 대한 업로드 URL을 찾을 수 없습니다.`);
+          return Promise.reject(new Error(`URL for ${name} not found.`));
+        }
 
-      // 2. Redux에 job_id 저장
-      if (jobId) {
-        dispatch(setJobId(jobId));
-        console.log(jobId);
-      }
+        return fetch(signedUrl, {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/octet-stream",
+          },
+          body: file,
+        });
+      });
 
+      // 모든 파일 업로드가 완료될 때까지 기다림
+      await Promise.all(uploadPromises);
+
+      await axiosSecure.post(`/bomatic_pipeline/start-analysis/${job_id}`);
+
+      dispatch(setJobId(job_id));
       navigate("/result");
     } catch (err) {
-      console.error("분석 실패:", err);
-      alert("서버에 요청 중 오류가 발생했습니다.");
+      console.error("전체 분석 과정 중 오류 발생:", err);
+      alert("서버 요청 중 오류가 발생했습니다. 콘솔을 확인해주세요.");
     } finally {
-      setIsLoading(false); // ✅ 성공/실패 여부와 상관없이 항상 로딩 상태 비활성화
+      setIsLoading(false);
     }
   };
 
