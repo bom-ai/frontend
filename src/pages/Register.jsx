@@ -11,7 +11,10 @@ export default function Register() {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
-  const handleSubmit = async () => {
+  // 👇 1. event(e)를 파라미터로 받도록 수정
+  const handleSubmit = async (e) => {
+    e.preventDefault(); // 👈 2. 폼 제출 시 페이지 새로고침 방지
+
     if (!email.trim() || !password.trim() || !confirmPassword.trim()) {
       alert("모든 항목을 입력해주세요.");
       return;
@@ -23,7 +26,7 @@ export default function Register() {
     }
 
     try {
-      setLoading(true); // ✅ 시작
+      setLoading(true);
       const res = await register(email, password);
       navigate("/check-email", { state: { email } });
     } catch (err) {
@@ -34,14 +37,14 @@ export default function Register() {
         err.message;
       alert("회원가입 실패: " + msg);
     } finally {
-      setLoading(false); // ✅ 끝
+      setLoading(false);
     }
   };
 
   return (
     <div
       className="min-h-screen w-full flex flex-col items-center justify-center 
-                 bg-cover bg-center bg-no-repeat font-sans text-gray-900"
+               bg-cover bg-center bg-no-repeat font-sans text-gray-900"
       style={{ backgroundImage: `url(${background})` }}
     >
       {loading && (
@@ -62,7 +65,11 @@ export default function Register() {
         bo:matic
       </h1>
 
-      <div className="w-full bg-white max-w-sm space-y-4 p-8 rounded-[20px] shadow mb-16">
+      {/* 👇 3. <div>를 <form>으로 변경하고 onSubmit 핸들러 추가 */}
+      <form
+        className="w-full bg-white max-w-sm space-y-4 p-8 rounded-[20px] shadow mb-16"
+        onSubmit={handleSubmit}
+      >
         <div>
           <label className="block text-[16px] font-semibold mb-1">이메일</label>
           <div className="flex items-center space-x-2">
@@ -115,12 +122,13 @@ export default function Register() {
         )}
 
         <button
+          // 👇 4. onClick은 제거하고, type="submit"을 추가
+          type="submit"
           className="w-full bg-gray-800 text-white text-[16px] font-semibold py-2 rounded-[8px] hover:bg-gray-700 transition"
-          onClick={handleSubmit}
         >
           회원가입
         </button>
-      </div>
+      </form>
     </div>
   );
 }
