@@ -154,7 +154,7 @@ export default function UploadAudio() {
       await axiosSecure.post(`/bomatic_pipeline/start-analysis/${job_id}`);
 
       dispatch(setJobId(job_id));
-      navigate("/result");
+      navigate(`/result/${job_id}`);
     } catch (err) {
       console.error("전체 분석 과정 중 오류 발생:", err);
       alert("서버 요청 중 오류가 발생했습니다. 콘솔을 확인해주세요.");

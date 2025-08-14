@@ -1,6 +1,6 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useSelector, useDispatch } from "react-redux";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import {
   FaCheckCircle,
   FaSpinner,
@@ -22,7 +22,8 @@ export default function Result() {
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
-  const jobId = useSelector((state) => state.job.jobId);
+  const { jobId } = useParams();
+  // const jobId = useSelector((state) => state.job.jobId);
   const uploadedFrame = useSelector((state) => state.uploadedFrame);
 
   const [jobStatus, setJobStatus] = useState({
@@ -36,39 +37,54 @@ export default function Result() {
   const [isDownloading, setIsDownloading] = useState(false);
   const [downloadError, setDownloadError] = useState(null);
 
+  const pollingTimeoutId = useRef(null);
+
   useEffect(() => {
     if (!jobId) {
       setError("유효한 작업 ID가 없습니다. 다시 시도해주세요.");
       return;
     }
 
-    const fetchStatus = async () => {
+    let isMounted = true; // 컴포넌트 언마운트 시 비동기 상태 업데이트를 막기 위함
+
+    const pollStatus = async () => {
       try {
         const response = await axiosSecure.get(
           `/bomatic_pipeline/batch-status/${jobId}`
         );
-        // ✅ 상태가 업데이트될 때마다 콘솔에 출력
+
+        if (!isMounted) return; // 컴포넌트가 사라졌다면 아무 작업도 하지 않음
+
         console.log("상태 업데이트:", response.data);
         setJobStatus(response.data);
 
         if (
-          response.data.status === "completed" ||
-          response.data.status === "failed"
+          response.data.status !== "completed" &&
+          response.data.status !== "failed"
         ) {
+          // ✅ 작업이 계속 진행 중일 때만 다음 폴링을 예약
+          pollingTimeoutId.current = setTimeout(pollStatus, 5000);
+        } else {
           console.log("작업 완료 또는 실패. 폴링을 중단합니다.");
-          clearInterval(intervalId);
         }
       } catch (err) {
+        if (!isMounted) return;
+
         console.error("상태 확인 실패:", err);
         setError("작업 상태를 확인하는 중 오류가 발생했습니다.");
-        clearInterval(intervalId);
       }
     };
 
-    const intervalId = setInterval(fetchStatus, 5000);
-    fetchStatus();
+    pollStatus(); // 최초 실행
 
-    return () => clearInterval(intervalId);
+    // Cleanup 함수
+    return () => {
+      isMounted = false;
+      // 컴포넌트가 언마운트되면 예약된 timeout을 반드시 취소
+      if (pollingTimeoutId.current) {
+        clearTimeout(pollingTimeoutId.current);
+      }
+    };
   }, [jobId]);
 
   const handleDownload = async () => {

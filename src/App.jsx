@@ -17,7 +17,7 @@ export default function App() {
         <Route path="/upload-frame" element={<UploadFrame />} />
         <Route path="/select-tone" element={<SelectTone />} />
         <Route path="/upload-audio" element={<UploadAudio />} />
-        <Route path="/result" element={<Result />} />
+        <Route path="/result/:jobId" element={<Result />} />
       </Routes>
     </BrowserRouter>
   );
