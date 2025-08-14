@@ -11,7 +11,10 @@ export default function Onboarding() {
   const [password, setPassword] = useState("");
   const navigate = useNavigate();
 
-  const handleSubmit = async () => {
+  // 👇 1. event(e)를 파라미터로 받도록 수정
+  const handleSubmit = async (e) => {
+    e.preventDefault(); // 👈 2. 폼 제출 시 페이지 새로고침 방지
+
     // 입력 유효성 검사
     if (!email.trim() || !password.trim()) {
       alert("이메일과 비밀번호를 모두 입력해주세요.");
@@ -24,17 +27,14 @@ export default function Onboarding() {
       navigate("/upload-frame"); // 로그인 성공 시 이동
     } catch (err) {
       if (err.response) {
-        // 서버에서 에러 응답이 왔을 때
         const detail =
           err.response.data?.detail ||
           err.response.data?.message ||
           "알 수 없는 서버 응답";
         alert("로그인 실패: " + detail);
       } else if (err.request) {
-        // 요청은 보냈지만 응답이 없을 때
         alert("서버로부터 응답이 없습니다. 네트워크를 확인해주세요.");
       } else {
-        // 요청도 못 보낸 에러 (axios 설정 문제 등)
         alert("요청 실패: " + err.message);
       }
     }
@@ -47,7 +47,7 @@ export default function Onboarding() {
   return (
     <div
       className="min-h-screen w-full flex flex-col items-center justify-center 
-             bg-cover bg-center bg-no-repeat font-sans text-gray-900"
+               bg-cover bg-center bg-no-repeat font-sans text-gray-900"
       style={{ backgroundImage: `url(${background})` }}
     >
       <h1
@@ -57,7 +57,11 @@ export default function Onboarding() {
         bo:matic
       </h1>
 
-      <div className="w-full bg-white max-w-sm space-y-4 p-8 rounded-[20px] shadow mb-16">
+      {/* 👇 3. <div>를 <form>으로 변경하고 onSubmit 핸들러 추가 */}
+      <form
+        className="w-full bg-white max-w-sm space-y-4 p-8 rounded-[20px] shadow mb-16"
+        onSubmit={handleSubmit}
+      >
         <div>
           <label className="block text-[16px] font-semibold mb-1">이메일</label>
           <div className="flex items-center space-x-2">
@@ -85,8 +89,9 @@ export default function Onboarding() {
         </div>
 
         <button
+          // 👇 4. onClick은 제거하고, type="submit"을 명시해주는 것이 좋음 (기본값이 submit이긴 함)
+          type="submit"
           className="w-full bg-gray-800 text-white text-[16px] font-semibold py-2 rounded-[8px] hover:bg-gray-700 transition"
-          onClick={handleSubmit}
         >
           로그인
         </button>
@@ -99,7 +104,7 @@ export default function Onboarding() {
             회원가입
           </span>
         </div>
-      </div>
+      </form>
 
       {/* 하단 로고 & 문구 */}
       <footer className="absolute bottom-8 flex items-center justify-center text-sm text-gray-500">
