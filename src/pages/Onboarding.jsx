@@ -9,6 +9,7 @@ import { setTokens } from "../utils/tokenStorage";
 export default function Onboarding() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
 
   // 👇 1. event(e)를 파라미터로 받도록 수정
@@ -20,6 +21,14 @@ export default function Onboarding() {
       alert("이메일과 비밀번호를 모두 입력해주세요.");
       return;
     }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      alert("유효한 이메일 주소를 입력해주세요.");
+      return;
+    }
+
+    setIsLoading(true);
 
     try {
       const res = await login(email, password);
@@ -37,6 +46,8 @@ export default function Onboarding() {
       } else {
         alert("요청 실패: " + err.message);
       }
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -57,7 +68,6 @@ export default function Onboarding() {
         bo:matic
       </h1>
 
-      {/* 👇 3. <div>를 <form>으로 변경하고 onSubmit 핸들러 추가 */}
       <form
         className="w-full bg-white max-w-sm space-y-4 p-8 rounded-[20px] shadow mb-16"
         onSubmit={handleSubmit}
@@ -105,6 +115,17 @@ export default function Onboarding() {
           </span>
         </div>
       </form>
+
+      {isLoading && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-60">
+          <div className="flex flex-col items-center">
+            <div className="w-10 h-10 border-4 border-white border-t-transparent rounded-full animate-spin"></div>
+            <span className="mt-4 text-white text-lg font-medium">
+              로그인 중
+            </span>
+          </div>
+        </div>
+      )}
 
       {/* 하단 로고 & 문구 */}
       <footer className="absolute bottom-8 flex items-center justify-center text-sm text-gray-500">

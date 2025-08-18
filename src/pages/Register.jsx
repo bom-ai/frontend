@@ -20,6 +20,21 @@ export default function Register() {
       return;
     }
 
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      alert("유효한 이메일 주소를 입력해주세요.");
+      return;
+    }
+
+    const passwordRegex =
+      /^(?=.*[A-Za-z])(?=.*\d)(?=.*[!@#$%^&*(),.?":{}|<>])[A-Za-z\d!@#$%^&*(),.?":{}|<>]{8,}$/;
+    if (!passwordRegex.test(password)) {
+      alert(
+        "비밀번호는 8자 이상, 영문, 숫자, 특수문자를 모두 포함해야 합니다."
+      );
+      return;
+    }
+
     if (password !== confirmPassword) {
       alert("비밀번호가 일치하지 않습니다.");
       return;
@@ -87,6 +102,9 @@ export default function Register() {
           <label className="block text-[16px] font-semibold mb-1">
             비밀번호
           </label>
+          <p className="text-[14px] text-gray-500 font-light">
+            비밀번호는 8자 이상, 영문, 숫자, 특수문자를 모두 포함해야 합니다
+          </p>
           <input
             type="password"
             placeholder="비밀번호 입력"
