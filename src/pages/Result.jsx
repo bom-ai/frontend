@@ -126,7 +126,7 @@ export default function Result() {
       const url = window.URL.createObjectURL(new Blob([response.data]));
       const link = document.createElement("a");
       link.href = url;
-      link.setAttribute("download", `analysis_result_${jobId}.docx`);
+      link.setAttribute("download", `내용 분석 보고서.docx`);
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
