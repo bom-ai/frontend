@@ -41,10 +41,15 @@ export default function UploadFrame() {
 
         const firstCell = row.querySelector("td, th");
         if (firstCell) {
-          groupNameSet.add(firstCell.textContent.trim());
+          const groupName = firstCell.textContent.trim();
+          if (groupName) {
+            groupNameSet.add(groupName);
+          }
         }
       });
     });
+
+    console.log(groupNameSet);
 
     return Array.from(groupNameSet);
   };
