@@ -12,6 +12,7 @@ import axiosBase from "./axiosBase";
 const axiosSecure = axios.create({
   baseURL: "https://bomatic-server-ymu7mz7dqa-du.a.run.app/api",
   headers: { "Content-Type": "application/json" },
+  withCredentials: true,
 });
 
 const refreshAccessToken = async () => {
